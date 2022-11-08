@@ -41,7 +41,7 @@ vector <message_storage> my_q_bufer, not_my_q_bufer;
 
 unsigned int last_update_id = 0;
 unsigned short not_my_questions_iterator = 0;
-string token = "5620370827:AAHN7m2AgWWA_vkWVPl5UAKzQ-k6Z4bb1Ac", m_token = "5620370827:AAHN7m2AgWWA_vkWVPl5UAKzQ-k6Z4bb1Ac";
+string token = "впишите сюда токен бота", m_token = "и сюда токен бота";
 
 size_t convert_codepoint_to_utf8(char(&chr)[4], unsigned int cp)
 {
