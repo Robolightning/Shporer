@@ -461,7 +461,7 @@ wstring GetClipboardText()
 	return text;
 }
 
-wstring sringcler(wstring s) // Удаление из строки небуквенных символов, перевод в нижний регистр?????? ???????
+wstring sringcler(wstring s) // Удаление из строки небуквенных символов, перевод в нижний регистр
 {
 	wstring result;
 	for (auto& c : s) 
@@ -548,7 +548,7 @@ wstring Ktest(int key)
 	{
 		switch (key)
 		{
-		case 0x43:// CTRL + C = сохранение скриншота, поиск и вывод ответа
+		case 0x43:// "CTRL" + "C" = сохранение скриншота, поиск и вывод ответа
 		{
 			Sleep(1500);
 			qbufer = GetClipboardText();
@@ -652,7 +652,7 @@ wstring Ktest(int key)
 			}
 		}
 		break;
-		case 0xBE:// = Сдвигает стоку на 10 символов вправо
+		case 0xBE://"CTRL" + ">" = Сдвигает стоку на 10 символов вправо
 		{
 			if(qbufer.size() > n && dispos < qbufer.size() - n)
 			{
