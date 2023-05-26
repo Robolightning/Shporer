@@ -1,0 +1,26 @@
+﻿  Source.cpp
+C:\Users\irobo\source\repos\WebShporer\WebShporer\Source.cpp(103,19): warning C4267: =: преобразование из "size_t" в "int"; возможна потеря данных
+C:\Users\irobo\source\repos\WebShporer\WebShporer\Source.cpp(107,20): warning C4267: =: преобразование из "size_t" в "int"; возможна потеря данных
+C:\Users\irobo\source\repos\WebShporer\WebShporer\Source.cpp(198,40): warning C4267: =: преобразование из "size_t" в "int"; возможна потеря данных
+C:\Users\irobo\source\repos\WebShporer\WebShporer\Source.cpp(251,40): warning C4267: =: преобразование из "size_t" в "int"; возможна потеря данных
+C:\Users\irobo\source\repos\WebShporer\WebShporer\Source.cpp(280,31): warning C4267: =: преобразование из "size_t" в "int"; возможна потеря данных
+C:\Users\irobo\source\repos\WebShporer\WebShporer\Source.cpp(302,38): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
+C:\Users\irobo\source\repos\WebShporer\WebShporer\Source.cpp(302,29): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
+C:\Users\irobo\source\repos\WebShporer\WebShporer\Source.cpp(309,38): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
+C:\Users\irobo\source\repos\WebShporer\WebShporer\Source.cpp(309,29): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
+C:\Users\irobo\source\repos\WebShporer\WebShporer\Source.cpp(316,42): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
+C:\Users\irobo\source\repos\WebShporer\WebShporer\Source.cpp(316,29): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
+C:\Users\irobo\source\repos\WebShporer\WebShporer\Source.cpp(322,41): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
+C:\Users\irobo\source\repos\WebShporer\WebShporer\Source.cpp(322,28): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
+C:\Users\irobo\source\repos\WebShporer\WebShporer\Source.cpp(336,41): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
+C:\Users\irobo\source\repos\WebShporer\WebShporer\Source.cpp(336,32): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
+C:\Users\irobo\source\repos\WebShporer\WebShporer\Source.cpp(367,36): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
+C:\Users\irobo\source\repos\WebShporer\WebShporer\Source.cpp(367,27): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
+C:\Users\irobo\source\repos\WebShporer\WebShporer\Source.cpp(369,36): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
+C:\Users\irobo\source\repos\WebShporer\WebShporer\Source.cpp(369,27): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
+C:\Users\irobo\source\repos\WebShporer\WebShporer\Source.cpp(167,9): warning C4101: hData: неиспользованная локальная переменная
+C:\Users\irobo\source\repos\WebShporer\WebShporer\Source.cpp(173,7): warning C4101: ch: неиспользованная локальная переменная
+C:\Users\irobo\source\repos\WebShporer\WebShporer\Source.cpp(165,6): warning C4101: keyboardLayout: неиспользованная локальная переменная
+C:\Users\irobo\source\repos\WebShporer\WebShporer\Source.cpp(164,8): warning C4101: threadId: неиспользованная локальная переменная
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(1094,5): error MSB6006: "link.exe" завершилась с кодом 1104.
+LINK : fatal error LNK1104: не удается открыть файл "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Packages\boost_1_80_0.obj"
