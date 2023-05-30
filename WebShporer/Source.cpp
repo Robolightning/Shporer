@@ -60,7 +60,7 @@ vector <question_storage> my_q_storage;
 
 unsigned int last_update_id = 0;
 unsigned short questions_iterator = 0;
-string token = "5779552750:AAHzHgFfHNZICH9agv-etQ7sSzq6sGVa9D0", m_token = "5779552750:AAHzHgFfHNZICH9agv-etQ7sSzq6sGVa9D0";
+string token = "5620370827:AAHN7m2AgWWA_vkWVPl5UAKzQ-k6Z4bb1Ac", m_token = "5620370827:AAHN7m2AgWWA_vkWVPl5UAKzQ-k6Z4bb1Ac";
 
 size_t StrToWstr(wstring& aDst, const string& aSrc)
 {
