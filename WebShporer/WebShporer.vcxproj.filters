@@ -15,11 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source.cpp">
-      <Filter>Файлы ресурсов</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
     <ResourceCompile Include="Shporer.rc">
       <Filter>Файлы ресурсов</Filter>
     </ResourceCompile>
@@ -33,5 +28,10 @@
     <Image Include="icon.ico">
       <Filter>Файлы ресурсов</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Source.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

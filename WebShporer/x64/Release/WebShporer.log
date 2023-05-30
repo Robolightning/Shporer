@@ -1,0 +1,48 @@
+﻿  Source.cpp
+C:\repos\Shporer\WebShporer\Source.cpp(216,10): warning C4267: инициализация: преобразование из "size_t" в "int"; возможна потеря данных
+C:\repos\Shporer\WebShporer\Source.cpp(261,10): warning C4267: инициализация: преобразование из "size_t" в "int"; возможна потеря данных
+C:\repos\Shporer\WebShporer\Source.cpp(269,18): warning C4267: инициализация: преобразование из "size_t" в "unsigned int"; возможна потеря данных
+C:\repos\Shporer\WebShporer\Source.cpp(270,19): warning C4018: <: несоответствие типов со знаком и без знака
+C:\repos\Shporer\WebShporer\Source.cpp(314,16): warning C4267: инициализация: преобразование из "size_t" в "int"; возможна потеря данных
+C:\repos\Shporer\WebShporer\Source.cpp(316,14): warning C4267: =: преобразование из "size_t" в "int"; возможна потеря данных
+C:\repos\Shporer\WebShporer\Source.cpp(320,25): warning C4267: =: преобразование из "size_t" в "int"; возможна потеря данных
+C:\repos\Shporer\WebShporer\Source.cpp(322,15): warning C4267: =: преобразование из "size_t" в "int"; возможна потеря данных
+C:\repos\Shporer\WebShporer\Source.cpp(325,25): warning C4267: =: преобразование из "size_t" в "int"; возможна потеря данных
+C:\repos\Shporer\WebShporer\Source.cpp(344,24): warning C4267: =: преобразование из "size_t" в "int"; возможна потеря данных
+C:\repos\Shporer\WebShporer\Source.cpp(347,24): warning C4267: =: преобразование из "size_t" в "int"; возможна потеря данных
+C:\repos\Shporer\WebShporer\Source.cpp(379,20): warning C4267: инициализация: преобразование из "size_t" в "unsigned short"; возможна потеря данных
+C:\repos\Shporer\WebShporer\Source.cpp(466,26): warning C4267: =: преобразование из "size_t" в "unsigned short"; возможна потеря данных
+C:\repos\Shporer\WebShporer\Source.cpp(554,14): warning C4267: =: преобразование из "size_t" в "int"; возможна потеря данных
+C:\repos\Shporer\WebShporer\Source.cpp(558,15): warning C4267: =: преобразование из "size_t" в "int"; возможна потеря данных
+C:\repos\Shporer\WebShporer\Source.cpp(631,33): warning C4267: =: преобразование из "size_t" в "int"; возможна потеря данных
+C:\repos\Shporer\WebShporer\Source.cpp(688,39): warning C4267: =: преобразование из "size_t" в "int"; возможна потеря данных
+C:\repos\Shporer\WebShporer\Source.cpp(721,29): warning C4267: =: преобразование из "size_t" в "int"; возможна потеря данных
+C:\repos\Shporer\WebShporer\Source.cpp(745,38): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
+C:\repos\Shporer\WebShporer\Source.cpp(745,29): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
+C:\repos\Shporer\WebShporer\Source.cpp(752,38): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
+C:\repos\Shporer\WebShporer\Source.cpp(752,29): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
+C:\repos\Shporer\WebShporer\Source.cpp(759,42): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
+C:\repos\Shporer\WebShporer\Source.cpp(759,29): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
+C:\repos\Shporer\WebShporer\Source.cpp(765,41): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
+C:\repos\Shporer\WebShporer\Source.cpp(765,28): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
+C:\repos\Shporer\WebShporer\Source.cpp(781,41): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
+C:\repos\Shporer\WebShporer\Source.cpp(781,32): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
+C:\repos\Shporer\WebShporer\Source.cpp(855,36): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
+C:\repos\Shporer\WebShporer\Source.cpp(855,27): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
+C:\repos\Shporer\WebShporer\Source.cpp(857,36): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
+C:\repos\Shporer\WebShporer\Source.cpp(857,27): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
+Source.obj : error LNK2001: неразрешенный внешний символ curl_mime_free.
+Source.obj : error LNK2001: неразрешенный внешний символ curl_mime_data.
+Source.obj : error LNK2001: неразрешенный внешний символ curl_mime_init.
+Source.obj : error LNK2001: неразрешенный внешний символ curl_easy_perform.
+Source.obj : error LNK2001: неразрешенный внешний символ curl_mime_addpart.
+Source.obj : error LNK2001: неразрешенный внешний символ curl_global_init.
+Source.obj : error LNK2001: неразрешенный внешний символ curl_easy_init.
+Source.obj : error LNK2001: неразрешенный внешний символ curl_slist_append.
+Source.obj : error LNK2001: неразрешенный внешний символ curl_mime_filedata.
+Source.obj : error LNK2001: неразрешенный внешний символ curl_mime_type.
+Source.obj : error LNK2001: неразрешенный внешний символ curl_mime_name.
+Source.obj : error LNK2001: неразрешенный внешний символ curl_slist_free_all.
+Source.obj : error LNK2001: неразрешенный внешний символ curl_easy_cleanup.
+Source.obj : error LNK2001: неразрешенный внешний символ curl_easy_setopt.
+C:\repos\Shporer\x64\Release\WebShporer.exe : fatal error LNK1120: неразрешенных внешних элементов: 14
