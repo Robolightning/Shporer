@@ -45,6 +45,7 @@ using namespace std;
 struct message_storage
 {
 	bool request = false;
+	short answer_id = -1;
 	string message;
 	vector <unsigned int> id;
 };
@@ -363,6 +364,7 @@ vector <message_storage> string_to_message_vector(string s)
 		if (tpos != -1)
 		{
 			cpos = s_message.find("\"reply_to_message\":{");
+			elem.answer_id = -1;
 			elem.request = false;
 			shift = 0;
 			if (cpos != -1)
@@ -386,6 +388,7 @@ vector <message_storage> string_to_message_vector(string s)
 	{
 		cpos = s_message.find("\"reply_to_message\":{");
 		elem.request = false;
+		elem.answer_id = -1;
 		shift = 0;
 		if (cpos != -1)
 		{
@@ -459,11 +462,19 @@ string Get_and_process_messages()
 						r += "\n\nОтвет:\n" + sa;
 						ToClipboard(sa);
 						StrToWstr(qa_e.answer, sa);
-						my_q_storage.push_back(qa_e);
-						questions_iterator = qcounter;
-						qcounter++;
-						r = "(" + to_string(qcounter) + "/" + to_string(qcounter) + ") " + r;
-						my_q_bufer.erase(my_q_bufer.begin() + j);
+						if (my_q_bufer[j].answer_id == -1)
+						{
+							my_q_storage.push_back(qa_e);
+							questions_iterator = qcounter;
+							my_q_bufer[j].answer_id = qcounter;
+							qcounter++;
+						}
+						else
+						{
+							questions_iterator = my_q_bufer[j].answer_id;
+							my_q_storage[questions_iterator] = qa_e;
+						}
+						r = "(" + to_string(questions_iterator + 1) + "/" + to_string(qcounter) + ") " + r;
 						break;
 					}
 				}
