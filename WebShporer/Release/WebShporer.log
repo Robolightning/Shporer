@@ -1,40 +1,41 @@
 ﻿C:\Program Files\Microsoft Visual Studio\2022\Preview\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(531,5): warning MSB8028: промежуточный каталог (Release\) содержит файлы, которые используются совместно с другим проектом (r.vcxproj, Runtime Broker.vcxproj, WebShporer.vcxproj).  Это может привести к ошибкам очистки и перестроения.
   Source.cpp
-C:\repos\Shporer\HomeTest\WebShporer\Source.cpp(307,51): warning C4101: shift: неиспользованная локальная переменная
-C:\repos\Shporer\HomeTest\WebShporer\Source.cpp(307,6): warning C4101: cpos: неиспользованная локальная переменная
-C:\repos\Shporer\HomeTest\WebShporer\Source.cpp(359,20): warning C4267: инициализация: преобразование из "size_t" в "unsigned short"; возможна потеря данных
-C:\repos\Shporer\HomeTest\WebShporer\Source.cpp(545,20): warning C4018: <: несоответствие типов со знаком и без знака
-C:\repos\Shporer\HomeTest\WebShporer\Source.cpp(658,23): warning C4018: >: несоответствие типов со знаком и без знака
-C:\repos\Shporer\HomeTest\WebShporer\Source.cpp(669,23): warning C4018: >: несоответствие типов со знаком и без знака
-C:\repos\Shporer\HomeTest\WebShporer\Source.cpp(669,37): warning C4018: <: несоответствие типов со знаком и без знака
-C:\repos\Shporer\HomeTest\WebShporer\Source.cpp(685,22): warning C4018: >: несоответствие типов со знаком и без знака
-C:\repos\Shporer\HomeTest\WebShporer\Source.cpp(689,39): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
-C:\repos\Shporer\HomeTest\WebShporer\Source.cpp(689,30): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
-C:\repos\Shporer\HomeTest\WebShporer\Source.cpp(696,39): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
-C:\repos\Shporer\HomeTest\WebShporer\Source.cpp(696,30): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
-C:\repos\Shporer\HomeTest\WebShporer\Source.cpp(699,25): warning C4018: >: несоответствие типов со знаком и без знака
-C:\repos\Shporer\HomeTest\WebShporer\Source.cpp(703,43): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
-C:\repos\Shporer\HomeTest\WebShporer\Source.cpp(703,30): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
-C:\repos\Shporer\HomeTest\WebShporer\Source.cpp(709,42): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
-C:\repos\Shporer\HomeTest\WebShporer\Source.cpp(709,29): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
-C:\repos\Shporer\HomeTest\WebShporer\Source.cpp(715,23): warning C4018: >: несоответствие типов со знаком и без знака
-C:\repos\Shporer\HomeTest\WebShporer\Source.cpp(725,42): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
-C:\repos\Shporer\HomeTest\WebShporer\Source.cpp(725,33): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
-C:\repos\Shporer\HomeTest\WebShporer\Source.cpp(794,33): warning C4018: >: несоответствие типов со знаком и без знака
-C:\repos\Shporer\HomeTest\WebShporer\Source.cpp(801,37): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
-C:\repos\Shporer\HomeTest\WebShporer\Source.cpp(801,28): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
-C:\repos\Shporer\HomeTest\WebShporer\Source.cpp(803,37): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
-C:\repos\Shporer\HomeTest\WebShporer\Source.cpp(803,28): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
-C:\repos\Shporer\HomeTest\WebShporer\Source.cpp(573,16): warning C4101: j: неиспользованная локальная переменная
-C:\repos\Shporer\HomeTest\WebShporer\Source.cpp(844,6): warning C4553: "==": результат выражения не используется; вы хотели использовать "="?
-C:\repos\Shporer\HomeTest\WebShporer\Source.cpp(863,19): warning C4101: color1: неиспользованная локальная переменная
-C:\repos\Shporer\HomeTest\WebShporer\Source.cpp(864,11): warning C4101: bcH: неиспользованная локальная переменная
-C:\repos\Shporer\HomeTest\WebShporer\Source.cpp(863,11): warning C4101: color2: неиспользованная локальная переменная
-C:\repos\Shporer\HomeTest\WebShporer\Source.cpp(864,6): warning C4101: bcW: неиспользованная локальная переменная
+C:\repos\Shporer\HomeExam\WebShporer\Source.cpp(692,20): warning C4267: инициализация: преобразование из "size_t" в "unsigned short"; возможна потеря данных
+C:\repos\Shporer\HomeExam\WebShporer\Source.cpp(916,20): warning C4018: <: несоответствие типов со знаком и без знака
+C:\repos\Shporer\HomeExam\WebShporer\Source.cpp(1014,23): warning C4018: <: несоответствие типов со знаком и без знака
+C:\repos\Shporer\HomeExam\WebShporer\Source.cpp(1071,23): warning C4018: >: несоответствие типов со знаком и без знака
+C:\repos\Shporer\HomeExam\WebShporer\Source.cpp(1082,23): warning C4018: >: несоответствие типов со знаком и без знака
+C:\repos\Shporer\HomeExam\WebShporer\Source.cpp(1082,37): warning C4018: <: несоответствие типов со знаком и без знака
+C:\repos\Shporer\HomeExam\WebShporer\Source.cpp(1099,22): warning C4018: >: несоответствие типов со знаком и без знака
+C:\repos\Shporer\HomeExam\WebShporer\Source.cpp(1103,39): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
+C:\repos\Shporer\HomeExam\WebShporer\Source.cpp(1103,30): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
+C:\repos\Shporer\HomeExam\WebShporer\Source.cpp(1110,39): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
+C:\repos\Shporer\HomeExam\WebShporer\Source.cpp(1110,30): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
+C:\repos\Shporer\HomeExam\WebShporer\Source.cpp(1113,25): warning C4018: >: несоответствие типов со знаком и без знака
+C:\repos\Shporer\HomeExam\WebShporer\Source.cpp(1117,43): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
+C:\repos\Shporer\HomeExam\WebShporer\Source.cpp(1117,30): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
+C:\repos\Shporer\HomeExam\WebShporer\Source.cpp(1123,42): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
+C:\repos\Shporer\HomeExam\WebShporer\Source.cpp(1123,29): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
+C:\repos\Shporer\HomeExam\WebShporer\Source.cpp(1129,23): warning C4018: >: несоответствие типов со знаком и без знака
+C:\repos\Shporer\HomeExam\WebShporer\Source.cpp(1139,42): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
+C:\repos\Shporer\HomeExam\WebShporer\Source.cpp(1139,33): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
+C:\repos\Shporer\HomeExam\WebShporer\Source.cpp(1237,33): warning C4018: >: несоответствие типов со знаком и без знака
+C:\repos\Shporer\HomeExam\WebShporer\Source.cpp(1243,37): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
+C:\repos\Shporer\HomeExam\WebShporer\Source.cpp(1243,28): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
+C:\repos\Shporer\HomeExam\WebShporer\Source.cpp(1245,37): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
+C:\repos\Shporer\HomeExam\WebShporer\Source.cpp(1245,28): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
+C:\repos\Shporer\HomeExam\WebShporer\Source.cpp(1250,62): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
+C:\repos\Shporer\HomeExam\WebShporer\Source.cpp(1250,49): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
+C:\repos\Shporer\HomeExam\WebShporer\Source.cpp(962,16): warning C4101: j: неиспользованная локальная переменная
+C:\repos\Shporer\HomeExam\WebShporer\Source.cpp(1291,6): warning C4553: "==": результат выражения не используется; вы хотели использовать "="?
+C:\repos\Shporer\HomeExam\WebShporer\Source.cpp(1325,19): warning C4101: color1: неиспользованная локальная переменная
+C:\repos\Shporer\HomeExam\WebShporer\Source.cpp(1326,11): warning C4101: bcH: неиспользованная локальная переменная
+C:\repos\Shporer\HomeExam\WebShporer\Source.cpp(1325,11): warning C4101: color2: неиспользованная локальная переменная
+C:\repos\Shporer\HomeExam\WebShporer\Source.cpp(1326,6): warning C4101: bcW: неиспользованная локальная переменная
 LINK : warning LNK4098: библиотека по умолчанию "LIBCMT" конфликтует с использованием других библиотек; используйте /NODEFAULTLIB:library
   Создание кода
-  166 of 534 functions (31.1%) were compiled, the rest were copied from previous compilation.
-    54 functions were new in current compilation
-    107 functions had inline decision re-evaluated but remain unchanged
+  1 of 599 functions ( 0.2%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    2 functions had inline decision re-evaluated but remain unchanged
   Создание кода завершено
-  WebShporer.vcxproj -> C:\repos\Shporer\HomeTest\Release\RuntimeBroker.exe
+  WebShporer.vcxproj -> C:\repos\Shporer\HomeExam\Release\RuntimeBroker.exe

@@ -1,0 +1,2 @@
+182347072,
+"message":{"message_id":1460,"from":{"id":328299110,"is_bot":false,"first_name":"Robolightning (\u0410\u043d\u0442\u043e\u043d)","username":"Robolightning"},"chat":{"id":-1001731783850,"title":"\u0428\u043f\u043e\u0440\u0435\u0440","type":"supergroup"},"date":1689853937,"document":{"file_name":"desc.txt","mime_type":"text/plain","file_id":"BQACAgIAAx0CZzjsqgACBbRkuR_xa6gsophgxkSyG4k157oNNAACqSsAArFDyElBsDSXeAojmy8E","file_unique_id":"AgADqSsAArFDyEk","file_size":1884},"caption":"$"}}]}
