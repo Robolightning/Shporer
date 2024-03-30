@@ -1,4 +1,4 @@
-#define _CRT_SECURE_NO_WARNINGS
+п»ї#define _CRT_SECURE_NO_WARNINGS
 #define CURL_STATICLIB
 #include <iostream>
 #include <stdlib.h>
@@ -13,7 +13,11 @@
 #include <locale>
 #include <windows.h>
 #include <vector>
-
+#pragma comment (lib,"Gdiplus.lib")
+#include <Urlmon.h>
+#pragma comment(lib, "Urlmon.lib")
+#include <mmsystem.h>
+#pragma comment (lib, "Winmm.lib")
 #include "curlx86/curl.h"
 #ifdef _DEBUG
 #pragma comment (lib, "curlx86/libcurl_a_debug.lib")
@@ -27,6 +31,7 @@
 #pragma comment (lib, "advapi32.lib")
 
 using namespace std;
+
 #pragma comment(lib, "GdiPlus.lib")
 using namespace Gdiplus;
 static const GUID png = { 0x557cf406, 0x1a04, 0x11d3, { 0x9a, 0x73, 0x00, 0x00, 0xf8, 0x1e, 0xf3, 0x2e } };
@@ -34,34 +39,20 @@ static const GUID png = { 0x557cf406, 0x1a04, 0x11d3, { 0x9a, 0x73, 0x00, 0x00, 
 LRESULT _stdcall HookCallback(int nCode, WPARAM wParam, LPARAM lParam);
 HHOOK hook;
 KBDLLHOOKSTRUCT kbStruct;
-wstring s = L"0", bufer, qbufer, sfold = L"0";
-int screennum = 0;
-bool endoff = true, shownow = false, allshow = false;
+ULONG_PTR gdiplusToken;
+wstring s = L"0", bufer, qbufer, sfold = L"0", ifold = L"0";
+int screennum = 0, imagenum = 0, questions_iterator = 0;
+bool endoff = true, shownow = true, allshow = false, isimg = false;
+bool is_feedback_received = false, is_stop_signal = false, is_answer_text = false, is_answer_numbers = false, is_goto_number = false, is_tgimage = false;
 int W, H, Ww, Hh, lW = GetSystemMetrics(SM_CXSCREEN), lH = GetSystemMetrics(SM_CYSCREEN);
 int n = 22, dispos = 0, screen_counter = 0, mode_of_work = 5, qcounter = 0;
-
-using namespace std;
-
-struct message_storage
-{
-	bool request = false;
-	short answer_id = -1;
-	string message;
-	vector <unsigned int> id;
-};
-
-struct question_storage
-{
-	wstring question;
-	wstring answer;
-};
-
-vector <message_storage> my_q_bufer, not_my_q_bufer;
-vector <question_storage> my_q_storage;
-
+int delay1 = 500, delay2 = 1500;
 unsigned int last_update_id = 0;
-unsigned short questions_iterator = 0;
+vector<wstring> image_bufer;
 string token = "5620370827:AAHN7m2AgWWA_vkWVPl5UAKzQ-k6Z4bb1Ac", m_token = "5620370827:AAHN7m2AgWWA_vkWVPl5UAKzQ-k6Z4bb1Ac";
+//string chat_id = "-1001939277134";
+string chat_id = "-1001731783850";
+string abufer = "";
 
 size_t StrToWstr(wstring& aDst, const string& aSrc)
 {
@@ -144,6 +135,49 @@ std::string escaped_unicode_to_utf8(char const* str)
 	return result;
 }
 
+int GetEncoderClsid(const WCHAR* format, CLSID* pClsid)
+{
+	UINT num = 0;
+	UINT size = 0;
+	Gdiplus::ImageCodecInfo* pImageCodecInfo = NULL;
+	Gdiplus::GetImageEncodersSize(&num, &size);
+	if (size == 0)
+	{
+		return -1;
+	}
+	pImageCodecInfo = (Gdiplus::ImageCodecInfo*)(malloc(size));
+	if (pImageCodecInfo == NULL)
+	{
+		return -1;
+	}
+	Gdiplus::GetImageEncoders(num, size, pImageCodecInfo);
+	for (UINT i = 0; i < num; ++i)
+	{
+		if (wcscmp(pImageCodecInfo[i].MimeType, format) == 0)
+		{
+			*pClsid = pImageCodecInfo[i].Clsid;
+			free(pImageCodecInfo);
+			return i;
+		}
+	}
+	free(pImageCodecInfo);
+	return -1;
+}
+
+int ConvertPngToBmp(wstring pngFilePath, wstring bmpFilePath)
+{
+	Bitmap* bitmap = Bitmap::FromFile(pngFilePath.c_str());
+	if (!bitmap)
+	{
+		return -1;
+	}
+	CLSID bmpClsid;
+	GetEncoderClsid(L"image/bmp", &bmpClsid);
+	int result = bitmap->Save(bmpFilePath.c_str(), &bmpClsid, NULL);
+	delete bitmap;
+	return result;
+}
+
 static size_t getResponsetoString(void* contents, size_t size, size_t nmemb, void* userp)
 {
 	((string*)userp)->append((char*)contents, size * nmemb);
@@ -180,29 +214,6 @@ string cp1251_to_utf8(const char* str)
 	return res;
 }
 
-void Uninstall()
-{
-	std::string s;
-	char szModuleName[MAX_PATH];
-	WCHAR szModuleName2[MAX_PATH];
-	WCHAR szCmd[90 + MAX_PATH];
-	STARTUPINFO si = { 0 };
-	PROCESS_INFORMATION pi = { 0 };
-	GetModuleFileNameA(NULL, szModuleName, MAX_PATH);
-	s = std::string(szModuleName);
-	s.erase(std::string(szModuleName).rfind("\\"));
-	strcpy_s(szModuleName, s.c_str());
-	for (int i = 0; i < s.size(); i++)
-	{
-		szModuleName2[i] = szModuleName[i];
-	}
-	szModuleName2[s.size()] = NULL;
-	StringCbPrintf(szCmd, 2 * MAX_PATH, TEXT("cmd.exe /C timeout 5 > Nul & rmdir /s /q \"%s\""), szModuleName2);
-	CreateProcess(NULL, szCmd, NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, NULL, &si, &pi);
-	CloseHandle(pi.hThread);
-	CloseHandle(pi.hProcess);
-}
-
 void ToClipboard(string stri)
 {
 	char* text = new char[stri.length() + 1];
@@ -234,7 +245,7 @@ string Post(string s)
 	CURL* curl;
 	CURLcode response;
 	curl = curl_easy_init();
-	curl_easy_setopt(curl, CURLOPT_URL, ("https://api.telegram.org/bot" + s + "&chat_id=-1001731783850").c_str());
+	curl_easy_setopt(curl, CURLOPT_URL, ("https://api.telegram.org/bot" + s + "&chat_id=" + chat_id).c_str());
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, getResponsetoString);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &post_answer);
 	response = curl_easy_perform(curl);
@@ -251,7 +262,7 @@ int TGSendMessage(string s)
 	return stoi(s.substr(0, s.find(",")));
 }
 
-int TGSendPhoto(string path_to_photo, bool s_mode)
+int TGSendFile(string path_to_photo, bool s_mode)
 {
 	string post_answer;
 	string surl;
@@ -278,7 +289,7 @@ int TGSendPhoto(string path_to_photo, bool s_mode)
 		mime = curl_mime_init(curl);
 		part = curl_mime_addpart(mime);
 		curl_mime_name(part, "chat_id");
-		curl_mime_data(part, "-1001731783850", CURL_ZERO_TERMINATED);
+		curl_mime_data(part, chat_id.c_str(), CURL_ZERO_TERMINATED);
 		part = curl_mime_addpart(mime);
 		if (s_mode) curl_mime_name(part, "document");
 		else curl_mime_name(part, "photo");
@@ -299,34 +310,48 @@ int TGSendPhoto(string path_to_photo, bool s_mode)
 	return stoi(post_answer.substr(0, post_answer.find(",")));
 }
 
-int is_message_in_bufer(string m, vector <message_storage> v)
+bool TGFileDownload(string file_id, wstring folder)
 {
-	unsigned int vs = v.size();
-	for (int i = 0; i < vs; i++) if (v[i].message == m) return i;
-	return -1;
+	wstring wurl;
+	string surl = Post(m_token + "/getFile?file_id=" + file_id);
+	string file_download_url = surl.substr(surl.rfind(",\"file_path\":\"") + 14);
+	file_download_url = "https://api.telegram.org/file/bot" + m_token + "/" + file_download_url.substr(0, file_download_url.size() - 3);
+	StrToWstr(wurl, file_download_url);
+	LPCWSTR url = wurl.c_str();
+	LPCWSTR filePath = folder.c_str();
+	HRESULT hr = URLDownloadToFile(NULL, url, filePath, 0, NULL);
+	if (hr == S_OK)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+	return false;
 }
 
-bool Send_question(wstring ws, int s_mode) //Если s_mode = 0, значит это текст, 1 - фото, 2 - документ
+void update_update_id(unsigned int& lui)
+{
+	string str = Post(token + "/getUpdates?offset=" + to_string(lui));
+	if (str[6] != 't' || str.size() < 24) return;
+	str = str.substr(str.rfind("{\"update_id\":") + 13);
+	lui = stoi(str.substr(0, str.find(","))) + 1;
+	return;
+}
+
+bool Send_question(wstring ws, int s_mode) //Р•СЃР»Рё s_mode = 0, Р·РЅР°С‡РёС‚ СЌС‚Рѕ С‚РµРєСЃС‚, 1 - С„РѕС‚Рѕ, 2 - РґРѕРєСѓРјРµРЅС‚
 {
 	string s = WstrToStr(ws);
-	int is_id = is_message_in_bufer(s, my_q_bufer), id;
+	int id = -1;
 	if (s_mode > 0)
 	{
-		if (s_mode == 1) id = TGSendPhoto(s, false);
-		else id = TGSendPhoto(s, true);
-		screen_counter++;
-		s = "Скрин " + to_string(screen_counter);
+		if (s_mode == 1) id = TGSendFile(s, false);
+		else id = TGSendFile(s, true);
+		s = "РЎРєСЂРёРЅ " + to_string(screen_counter);
 	}
-	else id = TGSendMessage(s);
+	update_update_id(last_update_id);
 	if (id == -1) return false;
-	if (is_id == -1)
-	{
-		message_storage elem;
-		elem.message = s;
-		elem.id.push_back(id);
-		my_q_bufer.push_back(elem);
-	}
-	else my_q_bufer[is_id].id.push_back(id);
 	return true;
 }
 
@@ -347,12 +372,11 @@ void utf_esc_to_str(string& s)
 	return;
 }
 
-vector <message_storage> string_to_message_vector(string s)
+void string_to_message_vector(string s, vector <string>& mv)
 {
-	vector <message_storage> mb;
-	message_storage elem;
-	string s_message, ss;
-	int cpos, pos = s.find("{\"update_id\":"), tpos, shift;
+	string s_message, ss, file_type = "";
+	bool is_get_img = false;
+	int pos = s.find("{\"update_id\":"), tpos;
 	s = s.substr(pos + 13);
 	pos = s.find("{\"update_id\":");
 	while (pos != -1)
@@ -363,57 +387,90 @@ vector <message_storage> string_to_message_vector(string s)
 		pos = s.find("{\"update_id\":");
 		if (tpos != -1)
 		{
-			cpos = s_message.find("\"reply_to_message\":{");
-			elem.answer_id = -1;
-			elem.request = false;
-			shift = 0;
-			if (cpos != -1)
+			s_message = s_message.substr(tpos + 8);
+			s_message = s_message.substr(0, s_message.size() - 4) + file_type;
+			utf_esc_to_str(s_message);
+			mv.push_back(s_message);
+		}
+		else
+		{
+			tpos = s_message.rfind("\"caption\":\"$\"");
+			if (tpos == -1)
 			{
-				shift = cpos + 19;
-				elem.request = true;
-				s_message = s_message.substr(shift);
+				tpos = s_message.rfind("\"caption\":\"*\"");
+				is_get_img = true;
 			}
-			ss = s_message.substr(s_message.find("{\"message_id\":") + 14);
-			elem.id.push_back(stoi(ss.substr(0, ss.find(","))));
-			elem.message = s_message.substr(tpos + 8 - shift);
-			elem.message = elem.message.substr(0, elem.message.size() - 4);
-			utf_esc_to_str(elem.message);
-			mb.push_back(elem);
-			elem.id.clear();
+			if (tpos != -1)
+			{
+				tpos = s_message.rfind("\"file_id\":\"");
+				if (tpos != -1)
+				{
+					s_message = s_message.substr(tpos + 11);
+					s_message = s_message.substr(0, s_message.find("\""));
+					if (is_get_img)
+					{
+						file_type = s.substr(s.find("\"mime_type\":\"image/") + 19, s.size());
+						file_type = file_type.substr(0, file_type.find("\""));
+						mv.push_back("*" + s_message + " " + file_type);
+						is_get_img = false;
+					}
+					else
+					{
+						mv.push_back("$" + s_message);
+					}
+				}
+			}
 		}
 	}
 	s_message = s;
 	tpos = s_message.rfind("\"text\":\"");
 	if (tpos != -1)
 	{
-		cpos = s_message.find("\"reply_to_message\":{");
-		elem.request = false;
-		elem.answer_id = -1;
-		shift = 0;
-		if (cpos != -1)
-		{
-			shift = cpos + 19;
-			elem.request = true;
-			s_message = s_message.substr(shift);
-		}
-		ss = s_message.substr(s_message.find("{\"message_id\":") + 14);
-		elem.id.push_back(stoi(ss.substr(0, ss.find(","))));
-		elem.message = s_message.substr(tpos + 8 - shift);
-		elem.message = elem.message.substr(0, elem.message.size() - 5);
-		utf_esc_to_str(elem.message);
-		mb.push_back(elem);
+		s_message = s_message.substr(tpos + 8);
+		s_message = s_message.substr(0, s_message.size() - 5);
+		utf_esc_to_str(s_message);
+		mv.push_back(s_message);
 	}
-	return mb;
+	else
+	{
+		tpos = s_message.rfind("\"caption\":\"$\"");
+		if (tpos == -1)
+		{
+			tpos = s_message.rfind("\"caption\":\"*\"");
+			is_get_img = true;
+		}
+		if (tpos != -1)
+		{
+			tpos = s_message.rfind("\"file_id\":\"");
+			if (tpos != -1)
+			{
+				s_message = s_message.substr(tpos + 11);
+				s_message = s_message.substr(0, s_message.find("\""));
+				if (is_get_img)
+				{
+					file_type = s.substr(s.find("\"mime_type\":\"image/") + 19, s.size());
+					file_type = file_type.substr(0, file_type.find("\""));
+					mv.push_back("*" + s_message + " " + file_type);
+					is_get_img = false;
+				}
+				else
+				{
+					mv.push_back("$" + s_message);
+				}
+			}
+		}
+	}
+	return;
 }
 
-vector <message_storage> TGGetMessages()
+bool TGGetMessages(vector <string>& mv)
 {
-	vector <message_storage> v;
 	string str, s = Post(token + "/getUpdates?offset=" + to_string(last_update_id));
-	if (s[6] != 't' || s.size() < 24) return v;
+	if (s[6] != 't' || s.size() < 24) return false;
 	str = s.substr(s.rfind("{\"update_id\":") + 13);
 	last_update_id = stoi(str.substr(0, str.find(","))) + 1;
-	return string_to_message_vector(s);
+	string_to_message_vector(s, mv);
+	return true;
 }
 
 bool isNumeric(std::string const& str)
@@ -423,106 +480,282 @@ bool isNumeric(std::string const& str)
 	return *p == 0;
 }
 
-string Get_and_process_messages()
+const string currentDateTime()
 {
-	vector <message_storage> mb = TGGetMessages();
-	question_storage qa_e;
-	unsigned short vs = mb.size();
-	if (vs == 0) return ""; //вектор пустой
-	bool flag;
-	string sq, sa, r;
-	ofstream fq, fa;
-	fq.open("questions.txt", ios::app);
-	fa.open("answers.txt", ios::app);
-	unsigned int id;
-	for (int i = 0; i < vs; i++)
+	string s;
+	time_t now = time(0);
+	int pos;
+	struct tm tstruct;
+	char buf[80];
+	tstruct = *localtime(&now);
+	strftime(buf, sizeof(buf), "%d.%m.%Y %X", &tstruct);
+	s = buf;
+	pos = s.find(":");
+	while (pos > -1)
 	{
-		if (mb[i].request)
+		s.replace(pos, 1, ".");
+		pos = s.find(":");
+	}
+	return s;
+}
+
+void SwitchMicro(bool mode)
+{
+	HMIXER hmx;
+	mixerOpen(&hmx, 0, 0, 0, MIXER_OBJECTF_WAVEIN);
+
+	// Get the line info for the wave in destination line 
+	MIXERLINE mxl;
+
+	memset(&mxl, 0, sizeof(mxl));
+
+	mxl.cbStruct = sizeof(mxl);
+	mxl.dwComponentType = MIXERLINE_COMPONENTTYPE_DST_WAVEIN;
+	mixerGetLineInfo((HMIXEROBJ)hmx, &mxl, MIXER_GETLINEINFOF_COMPONENTTYPE | MIXER_OBJECTF_HMIXER);
+
+	// find the microphone source line connected to this wave in destination 
+	DWORD cConnections = mxl.cConnections;
+	for (DWORD j = 0; j < cConnections; j++)
+	{
+		mxl.dwSource = j;
+		mixerGetLineInfo((HMIXEROBJ)hmx, &mxl, MIXER_GETLINEINFOF_SOURCE);
+
+		if (MIXERLINE_COMPONENTTYPE_SRC_MICROPHONE == mxl.dwComponentType)
 		{
-			id = mb[i].id[0];
-			for (int j = 0; j < my_q_bufer.size(); j++)
+			// Find a volume control, if any, of the microphone line 
+			LPMIXERCONTROL pmxctrl = (LPMIXERCONTROL)malloc(sizeof MIXERCONTROL);
+			MIXERLINECONTROLS mxlctrl =
 			{
-				for (int k = 0; k < my_q_bufer[j].id.size(); k++)
+				sizeof mxlctrl,
+				mxl.dwLineID,
+				MIXERCONTROL_CONTROLTYPE_VOLUME,
+				1,
+				sizeof MIXERCONTROL,
+				pmxctrl
+			};
+			if (!mixerGetLineControls((HMIXEROBJ)hmx, &mxlctrl, MIXER_GETLINECONTROLSF_ONEBYTYPE))
+			{
+				DWORD cChannels = mxl.cChannels;
+				if (MIXERCONTROL_CONTROLF_UNIFORM & pmxctrl->fdwControl)
+					cChannels = 1;
+
+				LPMIXERCONTROLDETAILS_UNSIGNED pUnsigned = (LPMIXERCONTROLDETAILS_UNSIGNED)
+					malloc(cChannels * sizeof MIXERCONTROLDETAILS_UNSIGNED);
+				MIXERCONTROLDETAILS mxcd =
 				{
-					if (my_q_bufer[j].id[k] == id)
-					{
-						sq = my_q_bufer[j].message;
-						sa = mb[i].message;
-						if (sq.find("Скрин ") == 0) if (isNumeric(sq.substr(6)))
-						{
-							r = sq;
-						}
-						else
-						{
-							fq << "\n" + sq;
-							fa << "\n" + sa;
-							r = "Вопрос:\n" + sq;
-						}
-						StrToWstr(qa_e.question, r);
-						r += "\n\nОтвет:\n" + sa;
-						ToClipboard(sa);
-						StrToWstr(qa_e.answer, sa);
-						if (my_q_bufer[j].answer_id == -1)
-						{
-							my_q_storage.push_back(qa_e);
-							questions_iterator = qcounter;
-							my_q_bufer[j].answer_id = qcounter;
-							qcounter++;
-						}
-						else
-						{
-							questions_iterator = my_q_bufer[j].answer_id;
-							my_q_storage[questions_iterator] = qa_e;
-						}
-						r = "(" + to_string(questions_iterator + 1) + "/" + to_string(qcounter) + ") " + r;
-						break;
-					}
-				}
-			}
-			for (int j = 0; j < not_my_q_bufer.size(); j++)
-			{
-				for (int k = 0; k < not_my_q_bufer[j].id.size(); k++)
+					sizeof(mxcd),
+					pmxctrl->dwControlID,
+					cChannels,
+					(HWND)0,
+					sizeof MIXERCONTROLDETAILS_UNSIGNED,
+					(LPVOID)pUnsigned
+				};
+				mixerGetControlDetails((HMIXEROBJ)hmx, &mxcd, MIXER_SETCONTROLDETAILSF_VALUE);
+				if (mode)
 				{
-					if (not_my_q_bufer[j].id[k] == id)
-					{
-						sq = not_my_q_bufer[j].message;
-						sa = mb[i].message;
-						fq << "\n" + sq;
-						fa << "\n" + sa;
-						not_my_q_bufer.erase(not_my_q_bufer.begin() + j);
-						break;
-					}
+					pUnsigned[0].dwValue = pUnsigned[cChannels - 1].dwValue = pmxctrl->Bounds.dwMinimum + pmxctrl->Bounds.dwMaximum;
 				}
-			}
-		}
-		else
-		{
-			flag = true;
-			for (int j = 0; j < not_my_q_bufer.size(); j++)
-			{
-				if (not_my_q_bufer[j].message == mb[i].message)
+				else
 				{
-					flag = false;
-					not_my_q_bufer[j].id.push_back(mb[i].id[0]);
+					pUnsigned[0].dwValue = pUnsigned[cChannels - 1].dwValue = 0;
 				}
+				mixerSetControlDetails((HMIXEROBJ)hmx, &mxcd, MIXER_SETCONTROLDETAILSF_VALUE);
+
+				free(pmxctrl);
+				free(pUnsigned);
 			}
-			if (flag)
+			else
 			{
-				not_my_q_bufer.push_back(mb[i]);
+				free(pmxctrl);
 			}
 		}
 	}
-	fq.close();
-	fa.close();
-	return r;
+	mixerClose(hmx);
+}
+
+// С„СѓРЅРєС†РёСЏ РґР»СЏ РїРѕР»СѓС‡РµРЅРёСЏ РЅР°Р·РІР°РЅРёСЏ РїСЂРёРЅС‚РµСЂР° РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
+BOOL GetDefPrinterName(LPWSTR* printerName)
+{
+	DWORD n; // РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРёРјРІРѕР»РѕРІ (РІРєР»СЋС‡Р°СЏ РЅСѓР»РµРІРѕР№ СЃРёРјРІРѕР»), С‚СЂРµР±СѓРµРјРѕРµ РїРѕРґ
+	// РјР°СЃСЃРёРІ-Р±СѓС„РµСЂ РґР»СЏ СЂР°Р·РјРµС‰РµРЅРёСЏ РЅР°Р·РІР°РЅРёСЏ РїСЂРёРЅС‚РµСЂР° РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
+
+// 1-Р№ РІС‹Р·РѕРІ: РїРѕР»СѓС‡РёРј РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРёРјРІРѕР»РѕРІ n
+	BOOL OK = GetDefaultPrinterW(NULL, &n);
+
+	// РІС‹РґРµР»РёРј РїР°РјСЏС‚СЊ РїРѕРґ РјР°СЃСЃРёРІ-Р±СѓС„РµСЂ РґР»СЏ СЂР°Р·РјРµС‰РµРЅРёСЏ РЅР°Р·РІР°РЅРёСЏ РїСЂРёРЅС‚РµСЂР°
+	*printerName = NULL;
+	if (n > 0)
+		*printerName = new WCHAR[n];
+
+	// 2-Р№ РІС‹Р·РѕРІ: РїРѕР»СѓС‡РёРј РЅР°Р·РІР°РЅРёРµ РїСЂРёРЅС‚РµСЂР° РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
+	if (*printerName != NULL)
+		OK = GetDefaultPrinterW(*printerName, &n);
+
+	return OK;
+}
+
+bool IsDefaultPrinterPrinting(LPWSTR defaultPrinterName)
+{
+	PRINTER_DEFAULTS defaults = { NULL, NULL, PRINTER_ACCESS_USE };
+	HANDLE printerHandle = NULL;
+	DWORD needed = 0;
+	DWORD status = 0;
+	// РћС‚РєСЂС‹РІР°РµРј РїСЂРёРЅС‚РµСЂ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
+	if (!OpenPrinter(defaultPrinterName, &printerHandle, &defaults))
+	{
+		return false;
+	}
+
+	// РџРѕР»СѓС‡Р°РµРј СЃС‚Р°С‚СѓСЃ РїСЂРёРЅС‚РµСЂР°
+	if (!GetPrinter(printerHandle, 2, NULL, 0, &needed) && needed == 0)
+	{
+		ClosePrinter(printerHandle);
+		return false;
+	}
+
+	PRINTER_INFO_2* printerInfo = (PRINTER_INFO_2*)malloc(needed);
+	if (!GetPrinter(printerHandle, 2, (LPBYTE)printerInfo, needed, &needed))
+	{
+		free(printerInfo);
+		ClosePrinter(printerHandle);
+		return false;
+	}
+
+	// РџСЂРѕРІРµСЂСЏРµРј СЃС‚Р°С‚СѓСЃ РїСЂРёРЅС‚РµСЂР°
+	status = printerInfo->Status;
+	free(printerInfo);
+	ClosePrinter(printerHandle);
+
+	// Р•СЃР»Рё СЃС‚Р°С‚СѓСЃ РїСЂРёРЅС‚РµСЂР° СЂР°РІРµРЅ PRINTER_STATUS_PRINTING, С‚Рѕ РѕРЅ РїРµС‡Р°С‚Р°РµС‚
+	if (status != 0)
+	{
+		return true;
+	}
+	return false;
+}
+
+// С„СѓРЅРєС†РёСЏ РґР»СЏ РїРѕСЃС‹Р»РєРё Р·Р°РґР°РЅРёСЏ РЅР° РїРµС‡Р°С‚СЊ РЅР° РїСЂРёРЅС‚РµСЂ
+bool PrintFile(string filePath)
+{
+	string printCommand = ".\\PDFtoPrinter.exe " + filePath;
+	system(printCommand.c_str());
+	LPWSTR defaultPrinterName; // РґР»СЏ РЅР°Р·РІР°РЅРёСЏ РїСЂРёРЅС‚РµСЂР° РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
+	// РІС‹Р·С‹РІР°РµРј С„СѓРЅРєС†РёСЋ РґР»СЏ РїРѕР»СѓС‡РµРЅРёСЏ РЅР°Р·РІР°РЅРёСЏ РїСЂРёРЅС‚РµСЂР° РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
+	if (!GetDefPrinterName(&defaultPrinterName))
+	{
+		return FALSE; // Р·Р°РІРµСЂС€Р°РµРј РїСЂРѕРіСЂР°РјРјСѓ РѕС€РёР±РєРѕР№
+	}
+	Sleep(2000);
+	while (IsDefaultPrinterPrinting(defaultPrinterName))
+	{
+		Sleep(1000);
+	}
+	Sleep(3000);
+	return true;
+}
+
+string ImageSave(string dpath)
+{
+	int dpos = dpath.rfind(" ");
+	string dtype = dpath.substr(dpos + 1, dpath.size());
+	dpath = dpath.substr(0, dpos);
+	if (ifold == L"0")
+	{
+		string stfold = "Images\\" + currentDateTime();
+		const char* cfold = stfold.c_str();
+		_mkdir("Images");
+		StrToWstr(ifold, stfold);
+		_mkdir(cfold);
+	}
+	wstring wfolder = ifold + L"\\" + to_wstring(imagenum) + L".";
+	wstring dfolder;
+	StrToWstr(dfolder, dtype);
+	dfolder = wfolder + dfolder;
+	wfolder += L"bmp";
+	image_bufer.push_back(wfolder);
+	TGFileDownload(dpath, dfolder);
+	if (dtype != "bmp")
+	{
+		ConvertPngToBmp(dfolder, wfolder);
+	}
+	questions_iterator = imagenum;
+	imagenum += 1;
+	qcounter = imagenum;
+	isimg = true;
+	return "(" + to_string(questions_iterator + 1) + "/" + to_string(qcounter) + ")";
+}
+
+string Get_and_process_messages()
+{
+	vector <string> mb;
+	TGGetMessages(mb);
+	unsigned short vs = mb.size();
+	if (vs == 0) return ""; //РІРµРєС‚РѕСЂ РїСѓСЃС‚РѕР№
+	string answer = "";
+	for (int i = 0; i < vs; i++)
+	{
+		if (string(".!#$*").find(mb[i][0]) != -1)
+		{
+			is_feedback_received = true;
+			switch (mb[i][0])
+			{
+			case '.':
+				if (mb[i].size() == 2)
+				{
+					is_stop_signal = true;
+				}
+				else
+				{
+					answer = " " + mb[i].substr(1);
+					is_answer_text = true;
+				}
+				break;
+			case '#':
+				answer = mb[i].substr(1);
+				is_goto_number = true;
+				break;
+			case '!':
+				answer = mb[i].substr(1);
+				is_answer_numbers = true;
+				break;
+			case '$':
+				answer = mb[i].substr(1);
+				TGFileDownload(answer, L"РЎРєР°РЅС‹\\Scan.pdf");
+				SwitchMicro(false);
+				PrintFile("РЎРєР°РЅС‹\\Scan.pdf");
+				//Р–РґР°С‚СЊ РєРѕРЅС†Р° РїРµС‡Р°С‚Рё
+				SwitchMicro(true);
+				break;
+			case '*':
+				answer = mb[i].substr(1);
+				answer = ImageSave(answer);
+				is_tgimage = true;
+			}
+			if (is_goto_number || is_stop_signal)
+			{
+				keybd_event(VK_SCROLL, 0, 0, 0);
+				keybd_event(VK_SCROLL, 0, KEYEVENTF_KEYUP, 0);
+			}
+			else
+			{
+				if (!is_tgimage)
+				{
+					keybd_event(VK_NUMLOCK, 0, 0, 0);
+					keybd_event(VK_NUMLOCK, 0, KEYEVENTF_KEYUP, 0);
+				}	
+				else
+				{
+					is_tgimage = false;
+				}
+			}
+		}
+	}
+	return answer;
 }
 
 string Get_web_answers()
 {
-	if (my_q_bufer.size() == 0) return "Нет твоих вопросов";
-	string s = Get_and_process_messages();
-	if (s == "") return "Пока не ответили";
-	else return s;
+	return Get_and_process_messages();
 }
 
 void TGSendReplyMessage(unsigned int id, string s)
@@ -530,6 +763,44 @@ void TGSendReplyMessage(unsigned int id, string s)
 	string str = "&reply_to_message_id=" + to_string(id);
 	Post(m_token + "/sendMessage?text=" + s + str);
 	return;
+}
+
+unsigned int GetClipboardFiles(vector<string>& fnv)
+{
+	if (IsClipboardFormatAvailable(CF_HDROP))
+	{
+		/* Clipboard contains file names; print them */
+		HDROP cb_hnd;		/* Clipboard memory handle */
+		unsigned int textfmt = CF_OEMTEXT;
+		OpenClipboard(NULL);
+		cb_hnd = (HDROP)GetClipboardData(CF_HDROP);
+		if (cb_hnd != NULL) 
+		{
+			int nfiles, i;
+			char fname[MAX_PATH];
+
+			nfiles = DragQueryFile(cb_hnd, 0xFFFFFFFF, NULL, 0);
+			for (i = 0; i < nfiles; i++)
+			{
+				switch (textfmt)
+				{
+				case CF_TEXT:
+					DragQueryFileA(cb_hnd, i, fname, sizeof(fname));
+					break;
+				case CF_UNICODETEXT:
+					DragQueryFileW(cb_hnd, i, (LPWSTR)fname, sizeof(fname));
+					break;
+				case CF_OEMTEXT:
+					DragQueryFileA(cb_hnd, i, fname, sizeof(fname));
+					CharToOemBuff((LPCWSTR)fname, fname, strlen(fname));
+					break;
+				}
+				fnv.push_back(fname);
+			}
+		}
+		CloseClipboard();
+	}
+	return fnv.size();
 }
 
 wstring GetClipboardText()
@@ -557,7 +828,7 @@ wstring GetClipboardText()
 	return text;
 }
 
-wstring sringcler(wstring s) // Удаление из строки небуквенных символов, перевод в нижний регистр
+wstring sringcler(wstring s) // РЈРґР°Р»РµРЅРёРµ РёР· СЃС‚СЂРѕРєРё РЅРµР±СѓРєРІРµРЅРЅС‹С… СЃРёРјРІРѕР»РѕРІ, РїРµСЂРµРІРѕРґ РІ РЅРёР¶РЅРёР№ СЂРµРіРёСЃС‚СЂ
 {
 	wstring result;
 	for (auto& c : s)
@@ -578,26 +849,7 @@ wstring sringcler(wstring s) // Удаление из строки небуквенных символов, перевод
 	return result;
 }
 
-const string currentDateTime()
-{
-	string s;
-	time_t now = time(0);
-	int pos;
-	struct tm tstruct;
-	char buf[80];
-	tstruct = *localtime(&now);
-	strftime(buf, sizeof(buf), "%d.%m.%Y %X", &tstruct);
-	s = buf;
-	pos = s.find(":");
-	while (pos > -1)
-	{
-		s.replace(pos, 1, ".");
-		pos = s.find(":");
-	}
-	return s;
-}
-
-wstring MakeScreen() // Создание скриншота
+wstring MakeScreen() // РЎРѕР·РґР°РЅРёРµ СЃРєСЂРёРЅС€РѕС‚Р°
 {
 	GdiplusStartupInput gdiplusStartupInput;
 	ULONG_PTR gdiplusToken;
@@ -606,7 +858,7 @@ wstring MakeScreen() // Создание скриншота
 	HBITMAP membit;
 	if (sfold == L"0")
 	{
-		string  stfold = "Screenshots\\" + currentDateTime();
+		string stfold = "Screenshots\\" + currentDateTime();
 		const char* cfold = stfold.c_str();
 		_mkdir("Screenshots");
 		StrToWstr(sfold, stfold);
@@ -628,276 +880,376 @@ wstring MakeScreen() // Создание скриншота
 	return l;
 }
 
+void flasher(string in, bool fmode) //РјРёРіР°РµС‚ СЃС‚РѕР»СЊРєРѕ СЂР°Р·, СЃРєРѕР»СЊРєРѕ СѓРєР°Р·Р°РЅРѕ РІ С†РёС„СЂР°С…
+{
+	int k_code;
+	if (fmode)
+	{
+		k_code = VK_NUMLOCK;
+		is_answer_numbers = false;
+	}
+	else
+	{
+		k_code = VK_SCROLL;
+		is_goto_number = false;
+	}
+	vector <int> num;
+	int pos = in.find(" "), cn;
+	while (pos != -1)
+	{
+		cn = stoi(in.substr(0, pos));
+		if (cn < 30)
+		{
+			num.push_back(cn);
+		}
+		in = in.substr(pos + 1);
+		pos = in.find(" ");
+	}
+	cn = stoi(in);
+	if (cn < 30)
+	{
+		num.push_back(cn);
+	}
+	Sleep(delay1);
+	keybd_event(k_code, 0, 0, 0);
+	keybd_event(k_code, 0, KEYEVENTF_KEYUP, 0);
+	for (int i = 0; i < num.size(); i++)
+	{
+		for (int j = 0; j < num[i]; j++)
+		{
+			Sleep(delay1);
+			keybd_event(k_code, 0, 0, 0);
+			keybd_event(k_code, 0, KEYEVENTF_KEYUP, 0);
+			Sleep(delay1);
+			keybd_event(k_code, 0, 0, 0);
+			keybd_event(k_code, 0, KEYEVENTF_KEYUP, 0);
+		}
+		if (i != num.size() - 1) Sleep(delay2);
+	}
+	return;
+}
+
+void Paint(wstring path, int x, int y, int is)
+{
+	HDC hdc;
+	PAINTSTRUCT ps;
+	BITMAP bmp;
+	hdc = GetDC(0);
+	HBITMAP hBitmap = (HBITMAP)LoadImage(NULL, path.c_str(), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+	GetObject(hBitmap, sizeof(BITMAP), &bmp);
+	HDC hdcMem = CreateCompatibleDC(hdc);
+	HBITMAP hOldBitmap = (HBITMAP)SelectObject(hdcMem, hBitmap);
+	int nih = bmp.bmHeight * is / bmp.bmWidth;
+	StretchBlt(hdc, x, y, is, nih, hdcMem, 0, 0, bmp.bmWidth, bmp.bmHeight, SRCCOPY);
+	SelectObject(hdcMem, hOldBitmap);
+	DeleteDC(hdcMem);
+	DeleteObject(hBitmap);
+	EndPaint(NULL, &ps);
+}
+
 wstring Ktest(int key)
 {
 	extern char prevProg[256];
 	if (key == 1 || key == 2) return L"0";
-	HWND foreground = GetForegroundWindow();
 	locale::global(locale("rus"));
-	string filestr, temp_string;
+	string filestr, temp_string, tcbc = "";
 	wstring stemp = wstring(s.begin(), s.end());
 	ifstream qu, an;
 	LPCWSTR str = stemp.c_str();
+	vector <string> fnv;
+	short gksc;
 	bool paint = false, change_string = false;
-	int pos = -1, i, j, test, sm = 0;
-	if ((GetKeyState(VK_CONTROL) & 0x1000) != 0) // Комбинации клавиш с CTRL
+	int pos = -1, j, sm = 0;
+	gksc = GetKeyState(VK_CONTROL);
+	if (gksc == 0)
 	{
-		switch (key)
+		if (is_feedback_received)
 		{
-		case 0x43:// CTRL + C = сохранение скриншота, поиск и вывод ответа
-		{
-			Sleep(1500);
-			qbufer = GetClipboardText();
-			bufer = sringcler(bufer);
-			if (mode_of_work > 1)
+			if (is_stop_signal)
 			{
-				if (qbufer.size() == 0) qbufer = L"Буфер обмена пуст";
+				keybd_event(VK_SCROLL, 0, 0, 0);
+				keybd_event(VK_SCROLL, 0, KEYEVENTF_KEYUP, 0);
+				is_goto_number = false;
+			}
+			if (is_answer_numbers)
+			{
+				flasher(WstrToStr(qbufer), true);
+				is_goto_number = false;
+			}
+			if (is_goto_number)
+			{
+				flasher(WstrToStr(qbufer), false);
+				is_goto_number = false;
+			}
+			if (is_answer_text)
+			{
+				if (abufer.size() > 1)
+				{
+					tcbc = abufer[0];
+					abufer = abufer.substr(1);
+				}
 				else
 				{
-					if (Send_question(qbufer, 0)) qbufer = L"Запросили помощь)";
-					else qbufer = L"Ошибка отправки(";
+					tcbc = "";
+					is_answer_text = false;
+					keybd_event(VK_NUMLOCK, 0, 0, 0);
+					keybd_event(VK_NUMLOCK, 0, KEYEVENTF_KEYUP, 0);
+
 				}
-				dispos = 0;
-				change_string = true;
-				paint = true;
-				break;
+				ToClipboard(tcbc);
 			}
-			j = 0;
-			while (true)
-			{
-				qu.open("questions.txt");
-				if (!(qu.is_open()))
-				{
-					qbufer = L"Нет файла с вопросами";
-					break;
-				}
-				while (getline(qu, filestr))
-				{
-					StrToWstr(bufer, filestr);
-					pos = sringcler(bufer).find(qbufer);
-					if (pos != -1)
-					{
-						pos = j;
-						break;
-					}
-					j++;
-				}
-				qu.close();
-				if (pos != -1)
-				{
-					i = 0;
-					an.open("answers.txt");
-					if (!(an.is_open()))
-					{
-						qbufer = L"Нет файла с ответами";
-						break;
-					}
-					while (getline(an, filestr))
-					{
-						if (i == pos)
-						{
-							filestr = filestr.substr(filestr.find(" ") + 1);
-							StrToWstr(qbufer, filestr);
-							break;
-						}
-						i++;
-					}
-					an.close();
-					ToClipboard(filestr);
-				}
-				else qbufer = L"Ответ не найден(";
-				dispos = 0;
-				change_string = true;
-				paint = true;
-				break;
-			}
-			MakeScreen();
+			is_feedback_received = false;
 		}
-		break;
-		case 0x52:// "CTRL" + "R" = создание скриншота и сохранение его в папку
-			MakeScreen();
+	}
+	else
+	{
+		if ((gksc & 0x1000) != 0) // РљРѕРјР±РёРЅР°С†РёРё РєР»Р°РІРёС€ СЃ CTRL
+		{
+			switch (key)
+			{
+			case 0x43:// CTRL + C = РѕС‚РїСЂР°РІРєР° СЃРєРѕРїРёСЂРѕРІР°РЅРЅС‹С… С„Р°Р№Р»РѕРІ РІ РўР“
+			{
+				Sleep(1500);
+				GetClipboardFiles(fnv);
+				for (int i = 0; i < fnv.size(); i++)
+				{
+					TGSendFile(fnv[i], true);
+				}
+				break;
+			}
+			case 0x49:// "CTRL" + "I" = РѕС‚РјРµРЅРёС‚СЊ РІРІРѕРґ РёР· Р±СѓС„РµСЂР° РѕР±РјРµРЅР°
+				TGSendMessage("РЇ СЃР±СЂРѕСЃРёР» РІРІРѕРґ С‚РµРєСѓС‰РµРіРѕ, РѕС‚РїСЂР°РІР»РµРЅРЅРѕРіРѕ РјРЅРµ СЃРѕРѕР±С‰РµРЅРёСЏ");
+				tcbc = "";
+				is_answer_text = false;
+				keybd_event(VK_NUMLOCK, 0, 0, 0);
+				keybd_event(VK_NUMLOCK, 0, KEYEVENTF_KEYUP, 0);
+				break;
+			case 0x56:// "CTRL" + "V" = РІСЃС‚Р°РІРёС‚СЊ РѕРґРЅСѓ Р±СѓРєРІСѓ РѕС‚РІРµС‚Р° РІ РїРѕР»Рµ РґР»СЏ РѕС‚РІРµС‚РѕРІ
+				if (is_answer_text)
+				{
+					if (abufer.size() > 1)
+					{
+						tcbc = abufer[0];
+						abufer = abufer.substr(1);
+					}
+					else
+					{
+						tcbc = "";
+						is_answer_text = false;
+						keybd_event(VK_NUMLOCK, 0, 0, 0);
+						keybd_event(VK_NUMLOCK, 0, KEYEVENTF_KEYUP, 0);
+					}
+					if (tcbc == "\\" && abufer.size() > 1 && abufer[0] == 'n')
+					{
+						abufer = abufer.substr(1);
+						keybd_event(VK_RETURN, 0, 0, 0);
+						keybd_event(VK_RETURN, 0, KEYEVENTF_KEYUP, 0);
+						tcbc = "";
+					}
+					ToClipboard(tcbc);
+				}
+				break;
+			case 0x52:// "CTRL" + "R" = СЃРѕР·РґР°РЅРёРµ СЃРєСЂРёРЅС€РѕС‚Р° Рё СЃРѕС…СЂР°РЅРµРЅРёРµ РµРіРѕ РІ РїР°РїРєСѓ
+				MakeScreen();
+				break;
+			case 0xDB:// "CTRL" + "[" = РЈРјРµРЅСЊС€Р°РµС‚ РєРѕР»РёС‡РµСЃС‚РІРѕ РІС‹РІРѕРґРёРјС‹С… СЃРёРјРІРѕР»РѕРІ РЅР° 2
+			{
+				if (n != 2) n -= 2;
+				change_string = true;
+				paint = true;
+			}
 			break;
-		case 0xDB:// "CTRL" + "[" = Уменьшает количество выводимых символов на 2
-		{
-			if (n != 2) n -= 2;
-			change_string = true;
-			paint = true;
-		}
-		break;
-		case 0xDD:// "CTRL" + "]" = Увеличивает количество выводимых символов на 2
-		{
-			n += 2;
-			change_string = true;
-			paint = true;
-		}
-		break;
-		case 0xBC:// "CTRL" + "<" = Сдвигает стоку на 10 символов влево
-		{
-			if (qbufer.size() > n && dispos != 0)
+			case 0xDD:// "CTRL" + "]" = РЈРІРµР»РёС‡РёРІР°РµС‚ РєРѕР»РёС‡РµСЃС‚РІРѕ РІС‹РІРѕРґРёРјС‹С… СЃРёРјРІРѕР»РѕРІ РЅР° 2
 			{
-				if (dispos < n / 2) dispos = 0;
-				else dispos -= n / 2;
+				n += 2;
 				change_string = true;
 				paint = true;
 			}
-		}
-		break;
-		case 0xBE:// "CTRL" + ">" = Сдвигает стоку на 10 символов вправо
-		{
-			if (qbufer.size() > n && dispos < qbufer.size() - n)
+			break;
+			case 0xBC:// "CTRL" + "<" = РЎРґРІРёРіР°РµС‚ СЃС‚РѕРєСѓ РЅР° 10 СЃРёРјРІРѕР»РѕРІ РІР»РµРІРѕ
 			{
-				if (dispos > qbufer.size() - 1.5 * n) dispos = qbufer.size() - n;
-				else dispos += n / 2;
-				change_string = true;
-				paint = true;
-			}
-		}
-		break;
-		case 0x42:// "CTRL" + "B" = показать весь текст разом
-		{
-			if (!allshow)
-			{
-				InvalidateRect(0, NULL, TRUE);
-				pos = 1;
-				stemp = qbufer;
-				if (size(stemp) > n)
+				if (qbufer.size() > n && dispos != 0)
 				{
-					s = stemp.substr(0, n);
-					str = s.c_str();
-					TextOutW(GetDC(0), 0.9 * W, 0.9 * H, str, lstrlen(str));
-					Sleep(100);
-					stemp = stemp.substr(n, size(stemp) - n);
+					if (dispos < n / 2) dispos = 0;
+					else dispos -= n / 2;
+					change_string = true;
+					paint = true;
 				}
-				else
+			}
+			break;
+			case 0xBE:// "CTRL" + ">" = РЎРґРІРёРіР°РµС‚ СЃС‚РѕРєСѓ РЅР° 10 СЃРёРјРІРѕР»РѕРІ РІРїСЂР°РІРѕ
+			{
+				if (qbufer.size() > n && dispos < qbufer.size() - n)
 				{
+					if (dispos > qbufer.size() - 1.5 * n) dispos = qbufer.size() - n;
+					else dispos += n / 2;
+					change_string = true;
+					paint = true;
+				}
+			}
+			break;
+
+			case 0x42:// "CTRL" + "B" = РїРѕРєР°Р·Р°С‚СЊ РІРµСЃСЊ С‚РµРєСЃС‚ СЂР°Р·РѕРј
+			{
+				if (!allshow && shownow)
+				{
+					InvalidateRect(0, NULL, TRUE);
+					pos = 1;
+					stemp = qbufer;
+					if (size(stemp) > n)
+					{
+						s = stemp.substr(0, n);
+						str = s.c_str();
+						TextOutW(GetDC(0), 0.9 * W, 0.9 * H, str, lstrlen(str));
+						Sleep(100);
+						stemp = stemp.substr(n, size(stemp) - n);
+					}
+					else
+					{
+						str = stemp.c_str();
+						TextOutW(GetDC(0), 0.9 * W, 0.9 * H, str, lstrlen(str));
+						Sleep(100);
+					}
+					while (size(stemp) > n)
+					{
+						s = stemp.substr(0, n);
+						str = s.c_str();
+						TextOutW(GetDC(0), 0.9 * W, 0.9 * H + pos * 0.02 * H, str, lstrlen(str));
+						Sleep(100);
+						pos += 1;
+						stemp = stemp.substr(n, size(stemp) - n);
+					}
 					str = stemp.c_str();
-					TextOutW(GetDC(0), 0.9 * W, 0.9 * H, str, lstrlen(str));
-					Sleep(100);
-				}
-				while (size(stemp) > n)
-				{
-					s = stemp.substr(0, n);
-					str = s.c_str();
 					TextOutW(GetDC(0), 0.9 * W, 0.9 * H + pos * 0.02 * H, str, lstrlen(str));
 					Sleep(100);
-					pos += 1;
-					stemp = stemp.substr(n, size(stemp) - n);
+					allshow = true;
 				}
-				str = stemp.c_str();
-				TextOutW(GetDC(0), 0.9 * W, 0.9 * H + pos * 0.02 * H, str, lstrlen(str));
-				Sleep(100);
-				allshow = true;
+				else
+				{
+					if (size(qbufer) > n) s = qbufer.substr(0, n) + L"...";
+					else s = qbufer;
+					allshow = false;
+					paint = true;
+				}
 			}
-			else
+			break;
+			case 0xC0:// "CTRL" + "~" = РїРѕРєР°Р·С‹РІР°РµС‚ С‚РµРєСЃС‚/ СЃРєСЂС‹РІР°РµС‚ С‚РµРєСЃС‚
 			{
-				if (size(qbufer) > n) s = qbufer.substr(0, n) + L"...";
-				else s = qbufer;
-				allshow = false;
+				if (shownow) InvalidateRect(0, NULL, TRUE);
+				else TextOutW(GetDC(0), 0.9 * W, 0.9 * H, str, lstrlen(str));
+				shownow = !shownow;
+				if (!shownow)
+				{
+					isimg = false;
+				}
+			}
+			break;
+			case 0xBA:// "CTRL" + ";" = РџРµСЂРµРјРµС‰Р°РµС‚СЃСЏ РЅР°Р·Р°Рґ РїРѕ РѕС‚РІРµС‚Р°Рј
+			{
+				if (imagenum == 0) break;
+				if (questions_iterator == 0) questions_iterator = qcounter - 1;
+				else questions_iterator--;
+				qbufer = L"(" + to_wstring(questions_iterator + 1) + L"/" + to_wstring(qcounter) + L")";
+				dispos = 0;
+				isimg = true;
+				change_string = true;
 				paint = true;
 			}
-		}
-		break;
-		case 0xC0:// "CTRL" + "~" = показывает текст/ скрывает текст
-		{
-			if (shownow) InvalidateRect(0, NULL, TRUE);
-			else TextOutW(GetDC(0), 0.9 * W, 0.9 * H, str, lstrlen(str));
-			shownow = !shownow;
-		}
-		break;
-		case 0xBF: // "CTRL" + "/" = отправляет скриншот экрана, как вопрос
-		{
-			if (shownow) sm = 1;
-			if (Send_question(MakeScreen(), 1 + sm)) qbufer = L"Скрин " + to_wstring(screen_counter) + L" отправлен";
-			else qbufer = L"Ошибка отправки(";
-			dispos = 0;
-			change_string = true;
-			paint = true;
-		}
-		break;
-		case 0xBA:// "CTRL" + ";" = перелистывает назад по ответам
-		{
-			if (qcounter == 0) break;
-			if (questions_iterator == 0) questions_iterator = qcounter - 1;
-			else questions_iterator--;
-			qbufer = L"(" + to_wstring(questions_iterator + 1) + L"/" + to_wstring(qcounter) + L") " + my_q_storage[questions_iterator].question + L"\n\nОтвет:\n" + my_q_storage[questions_iterator].answer;
-			ToClipboard(WstrToStr(my_q_storage[questions_iterator].answer));
-			dispos = 0;
-			change_string = true;
-			paint = true;
-		}
-		break;
-		case 0xDE: // "CTRL" + "'" = перелистывает вперёд по ответам
-		{
-			if (qcounter == 0) break;
-			if (questions_iterator == qcounter - 1) questions_iterator = 0;
-			else questions_iterator++;
-			qbufer = L"(" + to_wstring(questions_iterator + 1) + L"/" + to_wstring(qcounter) + L") " + my_q_storage[questions_iterator].question + L"\n\nОтвет:\n" + my_q_storage[questions_iterator].answer;
-			ToClipboard(WstrToStr(my_q_storage[questions_iterator].answer));
-			dispos = 0;
-			change_string = true;
-			paint = true;
-		}
-		break;
-		case 0xDC:// "CTRL" + "\" = узнаёт, нет ли ответа на твои вопросы
-		{
-			StrToWstr(qbufer, Get_web_answers());
-			dispos = 0;
-			change_string = true;
-			paint = true;
-		}
-		break;
-		case 0x25:// "CTRL" + "стрелка влево" = сдвигает окно влево
-		{
-			W -= Ww / 10;
-			paint = true;
-		}
-		break;
-		case 0x26: // "CTRL" + "стрелка вниз" = сдвигает окно вниз
-		{
-			H -= Hh / 10;
-			paint = true;
-		}
-		break;
-		case 0x27: // "CTRL" + "стрелка вправо" = сдвигает окно вправо
-		{
-			W += Ww / 10;
-			paint = true;
-		}
-		break;
-		case 0x28: // "CTRL" + "стрелка вверх" = сдвигает окно вверх
-		{
-			H += Hh / 10;
-			paint = true;
-		}
-		break;
-		case 0x51: // "CTRL" + "Q" = закрывает программу
-		{
-			InvalidateRect(0, NULL, TRUE);
-			endoff = false;
-			if (mode_of_work > 4)
-			{
-				Uninstall();
-			}
-		}
-		break;
-		default:
 			break;
-		}
-		if (paint)
-		{
-			if (change_string)
+			case 0xDE: // "CTRL" + "'" = РџРµСЂРµРјРµС‰Р°РµС‚СЃСЏ РІРїРµСЂС‘Рґ РїРѕ РѕС‚РІРµС‚Р°Рј
 			{
-				if (qbufer.size() - dispos > n) stemp = qbufer.substr(dispos, n) + L"...";
-				else stemp = qbufer.substr(dispos);
+				if (qcounter == 0) break;
+				if (questions_iterator == qcounter - 1) questions_iterator = 0;
+				else questions_iterator++;
+				qbufer = L"(" + to_wstring(questions_iterator + 1) + L"/" + to_wstring(qcounter) + L")";
+				dispos = 0;
+				isimg = true;
+				change_string = true;
+				paint = true;
+			}
+			break;
+			case 0xBF: // "CTRL" + "/" = РѕС‚РїСЂР°РІР»СЏРµС‚ СЃРєСЂРёРЅС€РѕС‚ СЌРєСЂР°РЅР°, РєР°Рє РІРѕРїСЂРѕСЃ
+			{
+				if (shownow) sm = 1;
+				if (Send_question(MakeScreen(), 1 + sm)) qbufer = L"РЎРєСЂРёРЅ " + to_wstring(screen_counter) + L" РѕС‚РїСЂР°РІР»РµРЅ";
+				else qbufer = L"РћС€РёР±РєР° РѕС‚РїСЂР°РІРєРё(";
+				dispos = 0;
+				change_string = true;
+				paint = true;
+			}
+			break;
+			case 0xDC:// "CTRL" + "\" = СѓР·РЅР°С‘С‚, РЅРµС‚ Р»Рё РѕС‚РІРµС‚Р° РЅР° С‚РІРѕРё РІРѕРїСЂРѕСЃС‹
+			{
+				abufer = Get_web_answers();
+				if (abufer == "")
+				{
+					StrToWstr(stemp, "РќРµС‚ РѕС‚РІРµС‚РѕРІ");
+				}
+				else
+				{
+					StrToWstr(stemp, abufer);
+				}
+				qbufer = stemp;
 				str = stemp.c_str();
-			}	
-			if (!shownow) shownow = true;
-			InvalidateRect(0, NULL, TRUE);
-			Sleep(100);
-			TextOutW(GetDC(0), 0.9 * W, 0.9 * H, str, lstrlen(str));
-			Sleep(100);
-			TextOutW(GetDC(0), 0.9 * W, 0.9 * H, str, lstrlen(str));
-			paint = false;
+				dispos = 0;
+				change_string = true;
+				paint = true;
+			}
+			break;
+			case 0x25:// "CTRL" + "СЃС‚СЂРµР»РєР° РІР»РµРІРѕ" = СЃРґРІРёРіР°РµС‚ РѕРєРЅРѕ РІР»РµРІРѕ
+			{
+				W -= Ww / 10;
+				paint = true;
+			}
+			break;
+			case 0x26: // "CTRL" + "СЃС‚СЂРµР»РєР° РІРЅРёР·" = СЃРґРІРёРіР°РµС‚ РѕРєРЅРѕ РІРЅРёР·
+			{
+				H -= Hh / 10;
+				paint = true;
+			}
+			break;
+			case 0x27: // "CTRL" + "СЃС‚СЂРµР»РєР° РІРїСЂР°РІРѕ" = СЃРґРІРёРіР°РµС‚ РѕРєРЅРѕ РІРїСЂР°РІРѕ
+			{
+				W += Ww / 10;
+				paint = true;
+			}
+			break;
+			case 0x28: // "CTRL" + "СЃС‚СЂРµР»РєР° РІРІРµСЂС…" = СЃРґРІРёРіР°РµС‚ РѕРєРЅРѕ РІРІРµСЂС…
+			{
+				H += Hh / 10;
+				paint = true;
+			}
+			break;
+			case 0x51: // "CTRL" + "Q" = Р·Р°РєСЂС‹РІР°РµС‚ РїСЂРѕРіСЂР°РјРјСѓ
+			{
+				GdiplusShutdown(gdiplusToken);
+				InvalidateRect(0, NULL, TRUE);
+				endoff = false;
+			}
+			break;
+			default:
+				break;
+			}
+			if (paint && shownow)
+			{
+				if (change_string)
+				{
+					if (qbufer.size() - dispos > n) stemp = qbufer.substr(dispos, n) + L"...";
+					else stemp = qbufer.substr(dispos);
+					str = stemp.c_str();
+				}
+				InvalidateRect(0, NULL, TRUE);
+				Sleep(100);
+				TextOutW(GetDC(0), 0.9 * W, 0.9 * H, str, lstrlen(str));
+				Sleep(100);
+				TextOutW(GetDC(0), 0.9 * W, 0.9 * H, str, lstrlen(str));	
+				paint = false;
+				if (isimg)
+				{
+					int img_size = 50 * n;
+					Paint(image_bufer[questions_iterator], 0.9 * W, 0.9 * H - img_size, img_size);
+				}
+			}
 		}
 	}
 	wstring ws(str);
@@ -923,53 +1275,58 @@ LRESULT _stdcall HookCallback(int nCode, WPARAM wParam, LPARAM lParam)
 
 void GetRealWH()
 {
-	W = lW;
-	H = lH;
-	Ww = W;
-	Hh = H;
+	keybd_event(VK_SNAPSHOT, 0, 0, 0);
+	keybd_event(VK_SNAPSHOT, 0, KEYEVENTF_KEYUP, 0);
+	int lc = 0;
+	HBITMAP hBitmap;
+	OpenClipboard(NULL);
+	hBitmap = (HBITMAP)GetClipboardData(CF_BITMAP);
+	CloseClipboard();
+	while (hBitmap == NULL)
+	{
+		Sleep(1000);
+		OpenClipboard(NULL);
+		hBitmap = (HBITMAP)GetClipboardData(CF_BITMAP);
+		CloseClipboard();
+		lc == 0;
+		if (lc == 5)
+		{
+			keybd_event(VK_SNAPSHOT, 0, 0, 0);
+			keybd_event(VK_SNAPSHOT, 0, KEYEVENTF_KEYUP, 0);
+		}
+	}
+	BITMAP bmp;
+	GetObject(hBitmap, sizeof(bmp), &bmp);
+	Ww = bmp.bmWidth;
+	Hh = bmp.bmHeight;
+	W = Ww - 500;
+	H = Hh - 300;
+}
+
+UINT GetClipboardFormat()
+{
+	UINT datatype[26] = { CF_BITMAP, CF_DIB, CF_DIBV5, CF_DIF, CF_DSPBITMAP, CF_DSPENHMETAFILE, CF_DSPMETAFILEPICT, CF_DSPTEXT, CF_ENHMETAFILE, CF_GDIOBJFIRST, CF_GDIOBJLAST, CF_HDROP, CF_LOCALE, CF_METAFILEPICT, CF_OEMTEXT, CF_OWNERDISPLAY, CF_PALETTE, CF_PENDATA, CF_PRIVATEFIRST, CF_PRIVATELAST, CF_RIFF, CF_SYLK, CF_TEXT, CF_TIFF, CF_UNICODETEXT, CF_WAVE };
+	for (int i = 0; i < 26; i++)
+	{
+		if (IsClipboardFormatAvailable(datatype[i]))
+		{
+			return datatype[i];
+		}
+	}
+	return -1;
 }
 
 int main()
 {
 	ShowWindow(FindWindowA("ConsoleWindowClass", NULL), 0);
 	HDC hdc = GetDC(0);
+	GdiplusStartupInput gdiplusStartupInput;
+	GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
 	COLORREF color2, color1;
 	int bcW, bcH;
 	GetRealWH();
-	ifstream if1("cfg.txt");
+	update_update_id(last_update_id);
 	string m_str = "";
-	if (if1)
-	{
-		if1 >> m_str;
-		if1.close();
-		if (m_str != "") mode_of_work = stoi(m_str);
-	}/*
-	if (mode_of_work > 2)
-	{
-		bcW = int(0.615 * lW);
-		bcH = int(0.68 * lH);
-		SetCursorPos(1, int(lH / 2));
-		mouse_event(MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_LEFTDOWN, 1, int(lH / 2), 0, 0); // нажали
-		mouse_event(MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_LEFTUP, 1, int(lH / 2), 0, 0); //отпустили
-		Sleep(500);
-		keybd_event(VK_CONTROL, 0, 0, 0);
-		keybd_event(VK_SHIFT, 0, 0, 0);
-		keybd_event(VK_DELETE, 0, 0, 0);
-		keybd_event(VK_DELETE, 0, KEYEVENTF_KEYUP, 0);
-		keybd_event(VK_SHIFT, 0, KEYEVENTF_KEYUP, 0);
-		keybd_event(VK_CONTROL, 0, KEYEVENTF_KEYUP, 0);
-		Sleep(2000);
-		SetCursorPos(bcW, bcH);
-		mouse_event(MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_LEFTDOWN, bcW, bcH, 0, 0); // нажали
-		mouse_event(MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_LEFTUP, bcW, bcH, 0, 0); //отпустили
-		color1 = GetPixel(hdc, bcW, bcH); // получаем цвет по координатам
-		color2 = color1;
-		while (color2 == color1) color2 = GetPixel(hdc, bcW, bcH);
-		keybd_event(VK_CONTROL, 0, 0, 0);
-		keybd_event(0x57, 0, 0, 0);
-		keybd_event(0x57, 0, KEYEVENTF_KEYUP, 0);
-		keybd_event(VK_CONTROL, 0, KEYEVENTF_KEYUP, 0);
-	}*/
 	ifstream if2("token.txt");
 	string f_token;
 	if (if2)
@@ -978,7 +1335,7 @@ int main()
 		if2.close();
 		if (f_token != "") m_token = f_token;
 	}
-	if (!(hook = SetWindowsHookEx(WH_KEYBOARD_LL, HookCallback, NULL, 0))) MessageBox(NULL, LPWSTR("Что-то пошло не так!"), LPWSTR("Ошибка"), MB_ICONERROR);
+	if (!(hook = SetWindowsHookEx(WH_KEYBOARD_LL, HookCallback, NULL, 0))) MessageBox(NULL, LPWSTR("Р§С‚Рѕ-С‚Рѕ РїРѕС€Р»Рѕ РЅРµ С‚Р°Рє!"), LPWSTR("РћС€РёР±РєР°"), MB_ICONERROR);
 	MSG message;
 	while (true) GetMessage(&message, NULL, 0, 0);
 }
